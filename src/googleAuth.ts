@@ -78,7 +78,14 @@ export class GoogleAuth {
     private clientSecret: string,
     private getStored: () => StoredAuth | null,
     private setStored: (auth: StoredAuth | null) => Promise<void>
-  ) { }
+  ) {
+    console.log("[GDrive OAuth] Client ID:", this.clientId);
+    console.log("[GDrive OAuth] Client ID length:", this.clientId?.length);
+    console.log(
+      "[GDrive OAuth] Client ID suffix:",
+      this.clientId?.slice(-30)
+    );
+  }
 
   /** Step 1: kick off device flow, returns the code to show the user. */
 
