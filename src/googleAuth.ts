@@ -90,30 +90,45 @@ export class GoogleAuth {
   /** Step 1: kick off device flow, returns the code to show the user. */
 
   async requestDeviceCode(): Promise<DeviceCodeResponse> {
+    const body = new URLSearchParams({
+      client_id: this.clientId.trim(),
+      scope: SCOPE,
+    }).toString();
+
+    console.log("[GDrive OAuth] Endpoint:", DEVICE_CODE_URL);
+    console.log("[GDrive OAuth] Client ID:", this.clientId);
+    console.log("[GDrive OAuth] Client ID length:", this.clientId.length);
+    console.log("[GDrive OAuth] Scope:", SCOPE);
+    console.log("[GDrive OAuth] Request body:", body);
+
     const res = await requestUrl({
       url: DEVICE_CODE_URL,
       method: "POST",
       contentType: "application/x-www-form-urlencoded",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
       throw: false,
-      body: new URLSearchParams({
-        client_id: this.clientId,
-        scope: SCOPE,
-      }).toString(),
+      body,
     });
 
+    console.log("[GDrive OAuth] Response status:", res.status);
+    console.log("[GDrive OAuth] Response body:", res.text);
+
+    const payload = res.json ?? {};
+
     if (res.status !== 200) {
-      const error = res.json?.error ??
-        res.text ??
-        "Unknown Google OAuth error";
+      const error = payload.error ?? "Unknown error";
+      const description =
+        payload.error_description ?? res.text ?? "No description";
 
       throw new Error(
-        `Device authorization failed (${res.status}): ${error}`
+        `Device authorization failed (${res.status}): ${error} | ${description}`
       );
     }
 
-    return res.json;
+    return payload;
   }
-
 
   /** Wakes any pending pollForToken() wait so it checks immediately. */
   wake(): void {
